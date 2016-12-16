@@ -1,0 +1,99 @@
+hello <password> <client> <version>
+get <subcommand> [<parameters>]
+set <subcommand> [<parameters>]
+quit
+shutdown
+help
+get abs_act_pos
+get abs_cmd_pos
+get angular_unit_conversion
+get brake
+get comm_mode
+get comm_prot
+get debug
+get display_angular_units
+get display_linear_units
+get echo
+get enable
+get error
+get estop
+get feed_override
+get flood
+get inifile
+get joint_fault
+get joint_homed
+get joint_limit
+get joint_pos
+get joint_type
+get joint_units
+get kinematics_type
+get linear_unit_conversion
+get lube
+get lube_level
+get machine
+get mist
+get mode
+get operator_display
+get operator_text
+get optional_stop
+get override_limits
+get plat
+get pos_offset
+get probe_tripped
+get probe_value
+get program
+get program_angular_units
+get program_codes
+get program_line
+get program_linear_units
+get program_status
+get program_units
+get rel_act_pos
+get rel_cmd_pos
+get set_wait
+get spindle
+get spindle_override
+get teleop_enable
+get time
+get timeout
+get tool
+get tool_offset
+get user_angular_units
+get user_linear_units
+get verbose
+set abort
+set angular_unit_conversion <deg | rad | grad | auto | custom>
+set brake <on | off>
+set debug <debug level>
+set estop <on | off>
+set feed_override <percent>
+set flood <on | off>
+set home <axis #>
+set jog <axis #, speed>
+set jog_incr <axis #, speed, distance>
+set jog_stop
+set linear_unit_conversion <inch | cm | mm | auto | custom>
+set load_tool_table <table name>
+set lube <on | off>
+set machine <on | off>
+set mdi <mdi string>
+set mist <on | off>
+set mode <manual | auto | mdi>
+set open <file path / name>
+set optional_stop <none | 0 | 1>
+set override_limits <on | off>
+set pause
+set probe
+set probe_clear
+set resume
+set run <line #>
+set setwait <time>
+set spindle <increase | decrease | forward | reverse | constant | off>
+set spindle_override <percent>
+set step
+set task_plan_init
+set teleop_enable
+set timeout <time>
+set tool_offset <offset>
+set update <on | off>
+set wait <time>
