@@ -10,6 +10,7 @@
 #define DELAY 25000
 
 art_tree t;
+char hint[256];
 
 static void load_autocomp(const char *filename) {
   FILE *f = fopen(filename, "r");
@@ -35,10 +36,31 @@ static int autocomp_cb(void *data, const unsigned char *k, uint32_t k_len,
   return 0;
 }
 
+static int hints_cb(void *data, const unsigned char *k, uint32_t k_len,
+                    void *val) {
+  char *m = (char *)data;
+  int x = strlen(m);
+  snprintf(hint, sizeof(hint), "%.*s", k_len - x, k + x);
+  return 1;
+}
+
 void completion(const char *buf, linenoiseCompletions *lc) {
   if (buf[0]) {
     art_iter_prefix(&t, buf, strlen(buf), autocomp_cb, lc);
   }
+}
+
+char *hints(const char *buf, int *color, int *bold) {
+  if (buf[0]) {
+    *color = 35;
+    *bold = 1;
+
+    memset(hint, 0, sizeof(hint));
+    art_iter_prefix(&t, buf, strlen(buf), hints_cb, (void*)buf);
+    return hint;
+  }
+
+  return NULL;
 }
 
 void send_cmd(int fd, char *cmd, int len) {
@@ -81,6 +103,7 @@ int main(int argc, char **argv) {
   /* Set the completion callback. This will be called every time the
    * user uses the <tab> key. */
   linenoiseSetCompletionCallback(completion);
+  linenoiseSetHintsCallback(hints);
 
   /* Load history from file. The history file is just a plain text file
    * where entries are separated by newlines. */
@@ -134,8 +157,7 @@ int main(int argc, char **argv) {
  *
  * TODO:
  * get list of available programs from $HOME/linuxcnc/nc_files/...
- * add support for get/set temperature: use custom M-CODE or set MDI-COMMAND in
- * inifile
- * return linuxcnc errors on bad commands or system failure
+ * add support for get/set of arbitrary hal pins
+ * return linuxcnc errors on bad commands or system failure (maybe use hints to show new errors)
  *
  */
