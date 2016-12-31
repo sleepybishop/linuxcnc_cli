@@ -1,0 +1,4 @@
+set abort
+set mode manual
+set jog_incr 2 1200 100
+
