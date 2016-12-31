@@ -31,6 +31,7 @@ static int autocomp_cb(void *data, const unsigned char *k, uint32_t k_len,
   char *m = calloc(1, k_len + 1);
   memcpy(m, k, k_len);
   linenoiseAddCompletion(lc, m);
+	free(m);
   return 0;
 }
 
@@ -75,11 +76,6 @@ int main(int argc, char **argv) {
 
   snprintf(prompt, sizeof(prompt), "%s> ", argv[1]);
 
-  send_cmd(cmd_sock, "hello EMC rmtcli 1.0", 0);
-  send_cmd(cmd_sock, "set enable EMCTOO", 0);
-
-  read(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
-
   load_autocomp("autocomp.txt");
 
   /* Set the completion callback. This will be called every time the
@@ -104,37 +100,29 @@ int main(int argc, char **argv) {
       linenoiseHistorySave("history.txt"); /* Save the history on disk. */
 
       rdlen = read(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
-      fprintf(stdout, "%.*s\n", rdlen, rdbuf);
+      fprintf(stdout, "%.*s", rdlen, rdbuf);
     } else if (!strncmp(line, "/historylen", 11)) {
       /* The "/historylen" command will change the history len. */
       int len = atoi(line + 11);
       linenoiseHistorySetMaxLen(len);
-    } else if (!strncmp(line, "/init", 5)) {
-      send_cmd(cmd_sock, "set estop off", 0);
-      send_cmd(cmd_sock, "set machine on", 0);
-      read(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
-    } else if (!strncmp(line, "/home", 5)) {
-      send_cmd(cmd_sock, "set mode manual", 0);
-      send_cmd(cmd_sock, "set home 0", 0);
-      send_cmd(cmd_sock, "set home 1", 0);
-      send_cmd(cmd_sock, "set home 2", 0);
-      send_cmd(cmd_sock, "set home 3", 0);
-      read(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
-    } else if (!strncmp(line, "/pgm", 6)) {
-      send_cmd(cmd_sock, "set mode auto", 0);
-      // send_cmd(cmd_sock, "set open ");
-      send_cmd(cmd_sock, "set run", 0);
-      read(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
-    } else if (!strncmp(line, "/clear", 6)) {
-      send_cmd(cmd_sock, "set abort", 0);
-      send_cmd(cmd_sock, "set mode manual", 0);
-      read(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
-      send_cmd(cmd_sock, "set jog_incr 2 1200 100", 0);
-      read(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
     } else if (line[0] == '/') {
-      printf("Unreconized command: %s\n", line);
-      close(cmd_sock);
-      exit(0);
+      char macro_file[256];
+      snprintf(macro_file, sizeof(macro_file), "./macros/%s", line + 1);
+      FILE *mfd = fopen(macro_file, "r");
+      char line[256];
+      if (mfd) {
+        while (fgets(line, sizeof(line), mfd)) {
+          line[strlen(line) - 1] = 0;
+          send_cmd(cmd_sock, line, 0);
+          rdlen = read(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
+          fprintf(stdout, "%.*s", rdlen, rdbuf);
+        }
+        fclose(mfd);
+      } else {
+        printf("Unreconized command: %s\n", line);
+        close(cmd_sock);
+        exit(0);
+      }
     }
     free(line);
   }
