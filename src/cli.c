@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
 #include <unistd.h>
 
 #include <ae/anet.h>
 #include <art/art.h>
 #include <linenoise/linenoise.h>
 
-#define DELAY 25000
+#define DELAY 250000
 
 art_tree t;
 char hint[256];
@@ -73,11 +74,29 @@ void send_cmd(int fd, char *cmd, int len) {
     cmd_len = snprintf(cmd_buf, sizeof(cmd_buf) - 1, "%s\r\n", cmd);
   }
   anetWrite(fd, cmd_buf, cmd_len);
-  usleep(DELAY);
+}
+
+int read_resp(int fd, char *buf, int len) {
+  fd_set fds;
+  struct timeval tv;
+  int nready = 0;
+
+  FD_ZERO(&fds);
+  FD_SET(fd, &fds);
+
+  tv.tv_sec = 0;
+  tv.tv_usec = DELAY;
+
+  nready = select(FD_SETSIZE, &fds, NULL, NULL, &tv);
+
+  if (nready > 0) {
+    return read(fd, buf, len);
+  }
+  return 0;
 }
 
 int main(int argc, char **argv) {
-  char *line, prompt[256], *rdbuf[4096];
+  char *line, prompt[256], rdbuf[4096];
   char *prgname = argv[0];
   int cmd_sock, rdlen;
   char anet_err[ANET_ERR_LEN];
@@ -122,7 +141,7 @@ int main(int argc, char **argv) {
       linenoiseHistoryAdd(line);           /* Add to the history. */
       linenoiseHistorySave("history.txt"); /* Save the history on disk. */
 
-      rdlen = read(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
+      rdlen = read_resp(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
       fprintf(stdout, "%.*s", rdlen, rdbuf);
     } else if (!strncmp(line, "/historylen", 11)) {
       /* The "/historylen" command will change the history len. */
@@ -137,7 +156,7 @@ int main(int argc, char **argv) {
         while (fgets(line, sizeof(line), mfd)) {
           line[strlen(line) - 1] = 0;
           send_cmd(cmd_sock, line, 0);
-          rdlen = read(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
+          rdlen = read_resp(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
           fprintf(stdout, "%.*s", rdlen, rdbuf);
         }
         fclose(mfd);
