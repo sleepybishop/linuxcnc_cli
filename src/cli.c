@@ -32,7 +32,7 @@ static int autocomp_cb(void *data, const unsigned char *k, uint32_t k_len,
   char *m = calloc(1, k_len + 1);
   memcpy(m, k, k_len);
   linenoiseAddCompletion(lc, m);
-	free(m);
+  free(m);
   return 0;
 }
 
@@ -56,7 +56,7 @@ char *hints(const char *buf, int *color, int *bold) {
     *bold = 1;
 
     memset(hint, 0, sizeof(hint));
-    art_iter_prefix(&t, buf, strlen(buf), hints_cb, (void*)buf);
+    art_iter_prefix(&t, buf, strlen(buf), hints_cb, (void *)buf);
     return hint;
   }
 
