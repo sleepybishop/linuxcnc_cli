@@ -143,6 +143,12 @@ int main(int argc, char **argv) {
 
       rdlen = read_resp(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
       fprintf(stdout, "%.*s", rdlen, rdbuf);
+
+      send_cmd(cmd_sock, "get error", 0);
+      rdlen = read_resp(cmd_sock, rdbuf, sizeof(rdbuf) - 1);
+      if (strncmp("ERROR OK", rdbuf, 8) != 0) {
+        fprintf(stderr, "\033[%d;%d;49m%.*s\n\033[0m", 1, 31, rdlen, rdbuf);
+      }
     } else if (!strncmp(line, "/historylen", 11)) {
       /* The "/historylen" command will change the history len. */
       int len = atoi(line + 11);
@@ -177,6 +183,5 @@ int main(int argc, char **argv) {
  * TODO:
  * get list of available programs from $HOME/linuxcnc/nc_files/...
  * add support for get/set of arbitrary hal pins
- * return linuxcnc errors on bad commands or system failure (maybe use hints to show new errors)
  *
  */
