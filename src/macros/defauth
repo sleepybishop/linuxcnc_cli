@@ -1,2 +1,3 @@
 hello EMC cli 1.0
 set enable EMCTOO
+set echo off
